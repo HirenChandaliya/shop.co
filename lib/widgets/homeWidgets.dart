@@ -70,7 +70,7 @@ class HeroSection extends StatelessWidget {
   }
 }
 
-class _Stat extends StatelessWidget {
+ class _Stat extends StatelessWidget {
   final String num, label;
 
   const _Stat({required this.num, required this.label});
