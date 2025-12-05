@@ -113,9 +113,14 @@ class _ProductCardState extends State<_ProductCard> {
                     borderRadius: BorderRadius.circular(15),
                     color: const Color(0xFFF0EEED),
                   ),
-                  child: Image.network(
-                    widget.product.image,
-                    fit: BoxFit.contain,
+                  // Image with Radius
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      widget.product.image,
+                      fit: BoxFit.cover,
+
+                    ),
                   ),
                 ),
               ),
@@ -130,8 +135,9 @@ class _ProductCardState extends State<_ProductCard> {
               Row(
                 children: [
                   const Icon(Icons.star, color: Colors.amber, size: 16),
+                  // 👇 Ahiya Fulfar Karyo Che (['rate'] -> .rate)
                   Text(
-                    " ${widget.product.rating['rate']}/5",
+                    " ${widget.product.rating.rate}/5",
                     style: const TextStyle(fontSize: 12),
                   ),
                 ],
@@ -151,7 +157,6 @@ class _ProductCardState extends State<_ProductCard> {
     );
   }
 }
-
 // --- FILTER SIDEBAR ---
 class FilterSidebar extends StatelessWidget {
   final RangeValues currentRange;
@@ -181,45 +186,41 @@ class FilterSidebar extends StatelessWidget {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const Divider(),
-          ...[
-            "electronics",
-            "jewelery",
-            "men's clothing",
-            "women's clothing",
-          ].map(
-            (e) => InkWell(
-              onTap: () {
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/category',
-                  arguments: {'title': e},
+
+          // --- DYNAMIC CATEGORIES ---
+          FutureBuilder<List<dynamic>>( // Changed to List<dynamic> for Platzi API objects
+            future: ApiService.getAllCategories(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: CircularProgressIndicator()),
                 );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        e,
-                        style: TextStyle(
-                          color: currentCategory == e
-                              ? Colors.black
-                              : Colors.grey,
-                          fontWeight: currentCategory == e
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right, size: 16),
-                  ],
-                ),
-              ),
-            ),
+              } else if (snapshot.hasError) {
+                return const Text("Failed to load categories");
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Text("No categories found");
+              }
+
+              final categories = snapshot.data!;
+
+              // Add "All Products" option manually at the start
+              return Column(
+                children: [
+                  _buildCategoryItem(context, "All Products"), // Default option
+                  ...categories.map((cat) {
+                    // Platzi API returns an object, so we extract the name
+                    final catName = cat['name'].toString();
+                    return _buildCategoryItem(context, catName);
+                  }).toList(),
+                ],
+              );
+            },
           ),
+
           const Divider(height: 30),
+
+          // --- PRICE FILTER ---
           const Text(
             "Price Range",
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -248,6 +249,47 @@ class FilterSidebar extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  // Helper widget to build each category row
+  Widget _buildCategoryItem(BuildContext context, String title) {
+    // Normalizing strings for comparison (ignoring case)
+    bool isSelected = currentCategory.toLowerCase() == title.toLowerCase();
+
+    // Handle specific case for "All Products" (might come as empty or null initially)
+    if (title == "All Products" && (currentCategory.isEmpty || currentCategory == "All Products")) {
+      isSelected = true;
+    }
+
+    return InkWell(
+      onTap: () {
+        // Reload page with new category
+        Navigator.pushReplacementNamed(
+          context,
+          '/category',
+          arguments: {'title': title},
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? Colors.black : Colors.grey,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            if (isSelected) const Icon(Icons.check, size: 16),
+          ],
+        ),
       ),
     );
   }

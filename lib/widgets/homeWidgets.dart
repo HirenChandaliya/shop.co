@@ -219,37 +219,40 @@ class DressStyleSection extends StatelessWidget {
           ),
           const SizedBox(height: 40),
 
-          FutureBuilder<List<String>>(
+          FutureBuilder<List<dynamic>>( // <--- Change List<String> to List<dynamic>
             future: ApiService.getAllCategories(),
             builder: (context, snapshot) {
-              // --- SHIMMER EFFECT HERE ---
+
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CategoryShimmerList(); // <--- Shimmer
+                return const CircularProgressIndicator(); // Or your Shimmer
               } else if (snapshot.hasError) {
                 return const Text("Failed to load categories");
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Text("No categories found");
               }
 
               final categories = snapshot.data!;
-              final Map<String, String> catImages = {
-                "electronics":
-                    "https://images.unsplash.com/photo-1498049860654-af1a5c5668ba?w=400",
-                "jewelery":
-                    "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400",
-                "men's clothing":
-                    "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=400",
-                "women's clothing":
-                    "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=400",
-              };
 
               return Wrap(
                 spacing: 20,
                 runSpacing: 20,
-                children: categories.map((catName) {
+                children: categories.map((category) {
+
+                  // 1. Data Parsing
+                  String catName = category['name'].toString();
+                  String catImage = category['image'].toString();
+
+                  // 2. Platzi API Image Cleaning (Bad URLs fix karva mate)
+                  // Kadi kadi api ["url"] format ma image mokle che
+                  if (catImage.startsWith('["')) {
+                    catImage = catImage.replaceAll('["', '').replaceAll('"]', '').replaceAll('"', '');
+                  }
+
                   return InkWell(
                     onTap: () => Navigator.pushNamed(
                       context,
                       '/category',
-                      arguments: {'title': catName},
+                      arguments: {'title': catName}, // Pass category name
                     ),
                     child: Container(
                       width: 250,
@@ -258,15 +261,16 @@ class DressStyleSection extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         image: DecorationImage(
-                          image: NetworkImage(
-                            catImages[catName] ??
-                                "https://via.placeholder.com/300",
-                          ),
+                          // 3. API Image Use Karo
+                          image: NetworkImage(catImage),
                           fit: BoxFit.cover,
                           colorFilter: ColorFilter.mode(
-                            Colors.black.withOpacity(0.3),
+                            Colors.black.withOpacity(0.3), // Text vachay evu dark layer
                             BlendMode.darken,
                           ),
+                          onError: (exception, stackTrace) {
+                            // Jo image na load thay to error handle
+                          },
                         ),
                       ),
                       alignment: Alignment.center,
@@ -274,9 +278,10 @@ class DressStyleSection extends StatelessWidget {
                         catName.toUpperCase(),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                            fontSize: 24, // Thoda mota fonts
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 1.2
                         ),
                       ),
                     ),

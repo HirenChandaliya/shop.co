@@ -4,6 +4,7 @@ import 'package:myecommerce/screens/cartPage.dart';
 import 'package:myecommerce/screens/categoryPage.dart';
 import 'package:myecommerce/screens/checkoutPage.dart';
 import 'package:myecommerce/screens/homePage.dart';
+import 'package:myecommerce/screens/loginPage.dart';
 import 'package:myecommerce/screens/productDetailPage.dart';
 
 void main() {
@@ -27,8 +28,8 @@ class ShopCoApp extends StatelessWidget {
       // --- ROUTES SETUP ---
       initialRoute: '/login', // <--- Have pehla Login Page khulse
       routes: {
-        // '/login': (context) => const LoginPage(), // <--- Route Add karyo
-        '/home': (context) => const HomePage(), // Home nu naam change karyu clarity mate
+        '/login': (context) => const LoginPage(), // <--- Add this
+        '/home': (context) => const HomePage(),
         '/': (context) => const HomePage(), // Fallback
         '/category': (context) => const CategoryPage(),
         '/product': (context) => const ProductDetailPage(),
