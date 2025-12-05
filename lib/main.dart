@@ -6,6 +6,8 @@ import 'package:myecommerce/screens/checkoutPage.dart';
 import 'package:myecommerce/screens/homePage.dart';
 import 'package:myecommerce/screens/loginPage.dart';
 import 'package:myecommerce/screens/productDetailPage.dart';
+import 'package:myecommerce/screens/profilePage.dart';
+import 'package:myecommerce/screens/signUpScreen.dart';
 
 void main() {
   runApp(const ShopCoApp());
@@ -29,12 +31,14 @@ class ShopCoApp extends StatelessWidget {
       initialRoute: '/login', // <--- Have pehla Login Page khulse
       routes: {
         '/login': (context) => const LoginPage(), // <--- Add this
+        '/signup': (context) => const SignupPage(), // <--- Add this
         '/home': (context) => const HomePage(),
         '/': (context) => const HomePage(), // Fallback
         '/category': (context) => const CategoryPage(),
         '/product': (context) => const ProductDetailPage(),
         '/cart': (context) => const CartPage(),
         '/checkout': (context) => const CheckoutPage(),
+        '/profile': (context) => const ProfilePage(),
       },
     );
   }

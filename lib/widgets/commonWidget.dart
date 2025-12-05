@@ -79,7 +79,10 @@ class NavBar extends StatelessWidget {
             child: const Icon(Icons.shopping_cart_outlined),
           ),
           const SizedBox(width: 15),
-          const Icon(Icons.account_circle_outlined),
+          InkWell(
+            onTap: () => Navigator.pushNamed(context, '/profile'), // <--- Link Added
+            child: const Icon(Icons.account_circle_outlined),
+          ),
         ],
       ),
     );
